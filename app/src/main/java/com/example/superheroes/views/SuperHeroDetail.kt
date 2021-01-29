@@ -1,5 +1,6 @@
 package com.example.superheroes.views
 
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -9,6 +10,11 @@ import com.example.superheroes.databinding.ActivitySuperHeroDetailBinding
 import com.example.superheroes.interfaces.ISuperHeroDetail
 import com.example.superheroes.models.SuperHeroDetail
 import com.example.superheroes.presenters.SuperHeroPresenter
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.RadarData
+import com.github.mikephil.charting.data.RadarDataSet
+import com.github.mikephil.charting.data.RadarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.squareup.picasso.Picasso
 import jp.wasabeef.picasso.transformations.CropCircleTransformation
 import kotlinx.coroutines.Dispatchers
@@ -27,38 +33,9 @@ class SuperHeroDetail : AppCompatActivity(), ISuperHeroDetail {
         val heroId = intent.getStringExtra("id").toString()
         superHeroDetailPresenter.getSuperHeroDetail(heroId)
 
-
-
-//        var superHeroStats: ArrayList<RadarEntry> = ArrayList()
-//        superHeroStats.add(RadarEntry(94.0f))
-//        superHeroStats.add(RadarEntry(100.0f))
-//        superHeroStats.add(RadarEntry(100.0f))
-//        superHeroStats.add(RadarEntry(100.0f))
-//        superHeroStats.add(RadarEntry(100.0f))
-//        superHeroStats.add(RadarEntry(85.0f))
-//
-//        var radarSetSuperHeroStats = RadarDataSet(superHeroStats, "Super Hero name" )
-//        radarSetSuperHeroStats.color = Color.GREEN
-//        radarSetSuperHeroStats.lineWidth = 4f
-//        radarSetSuperHeroStats.valueTextColor = Color.RED
-//        radarSetSuperHeroStats.valueTextSize = 8f
-//        radarSetSuperHeroStats.fillColor = Color.GREEN
-//        radarSetSuperHeroStats.entryCount
-//
-//        var radarData: RadarData = RadarData()
-//        radarData.addDataSet(radarSetSuperHeroStats)
-//
-//        var labels: Array<String> = arrayOf("Inteligencia", "Fuerza", "Velocidad", "Durabilidad", "Poder", "Combate")
-//        var xAxis: XAxis = binding.radarChart.xAxis
-//        xAxis.valueFormatter = IndexAxisValueFormatter(labels)
-//
-//        binding.radarChart.data = radarData
-//
-//        binding.radarChart.invalidate()
     }
 
     override suspend fun superHeroDetailSuccess(superheroDetailResponse: SuperHeroDetail?) {
-        Log.d("Logueando", superheroDetailResponse.toString())
         withContext(Dispatchers.Main) {
             if (superheroDetailResponse != null) {
                 binding.progressCircular.visibility = View.GONE
@@ -72,13 +49,42 @@ class SuperHeroDetail : AppCompatActivity(), ISuperHeroDetail {
                 val heroAlene: String = "$heroWeight - $heroHeight"
                 binding.txtWeightHeight.text = heroAlene
                 Picasso.get().load(superheroDetailResponse.image.url).transform(CropCircleTransformation()).into(binding.imgSuperHeroePhoto)
+                binding.txtPublisher.text = superheroDetailResponse.biography.publisher
+                binding.txtOcucupation.text = superheroDetailResponse.work.occupation
+                binding.txtAffiliation.text = superheroDetailResponse.connections.groupAffiliation
+
+
+                var superHeroStats: ArrayList<RadarEntry> = ArrayList()
+                superHeroStats.add(RadarEntry(superheroDetailResponse.powerstats.intelligence.toFloat()))
+                superHeroStats.add(RadarEntry(superheroDetailResponse.powerstats.strength.toFloat()))
+                superHeroStats.add(RadarEntry(superheroDetailResponse.powerstats.speed.toFloat()))
+                superHeroStats.add(RadarEntry(superheroDetailResponse.powerstats.durability.toFloat()))
+                superHeroStats.add(RadarEntry(superheroDetailResponse.powerstats.power.toFloat()))
+                superHeroStats.add(RadarEntry(superheroDetailResponse.powerstats.combat.toFloat()))
+
+                var radarSetSuperHeroStats = RadarDataSet(superHeroStats, superheroDetailResponse.name )
+                radarSetSuperHeroStats.color = Color.GREEN
+                radarSetSuperHeroStats.lineWidth = 4f
+                radarSetSuperHeroStats.valueTextColor = Color.RED
+                radarSetSuperHeroStats.valueTextSize = 8f
+                radarSetSuperHeroStats.fillColor = Color.GREEN
+
+                var radarData: RadarData = RadarData()
+                radarData.addDataSet(radarSetSuperHeroStats)
+
+                var labels: Array<String> = arrayOf("Inteligencia", "Fuerza", "Velocidad", "Durabilidad", "Poder", "Combate")
+                var xAxis: XAxis = binding.radarChart.xAxis
+                xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+
+                binding.radarChart.data = radarData
+
+                binding.radarChart.invalidate()
             }
         }
 
     }
 
     override fun superHeroDetailError(errorMessage: String) {
-        Log.d("Logueando", errorMessage)
         Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_SHORT).show()
     }
 }
