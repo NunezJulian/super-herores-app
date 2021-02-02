@@ -8,6 +8,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
+import java.util.concurrent.TimeUnit
 import javax.net.ssl.*
 
 class Services {
@@ -21,6 +22,8 @@ class Services {
 
     fun getRetrofitInstance(showAllHeroes: Boolean): Retrofit {
         val okHttpClient: OkHttpClient = unSafeOkHttpClient()
+            .connectTimeout(25, TimeUnit.SECONDS)
+            .readTimeout(25, TimeUnit.SECONDS)
             .build()
 
         val gson: Gson = GsonBuilder()

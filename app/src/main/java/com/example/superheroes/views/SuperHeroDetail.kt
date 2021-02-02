@@ -85,6 +85,6 @@ class SuperHeroDetail : AppCompatActivity(), ISuperHeroDetail {
     }
 
     override fun superHeroDetailError(errorMessage: String) {
-        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+        Toast.makeText(applicationContext, errorMessage, Toast.LENGTH_SHORT).show()
     }
 }
